@@ -53,6 +53,8 @@ public class ShaderToy implements View.OnTouchListener {
     private int mafPosition;
     //全局时间句柄
     private int miTimeHandle;
+    //当前多少帧
+    private int miFrameHandle;
     //宽高
     private int miResolutionHandle;
     //点击位置
@@ -62,7 +64,7 @@ public class ShaderToy implements View.OnTouchListener {
     private float[] mMouse = new float[]{0, 0, 0, 0};
     private float[] mResolution;
     private long mStartTime;
-
+    private int iFrame = 0;
 
     public ShaderToy(Context context) {
         this.context = context;
@@ -92,6 +94,8 @@ public class ShaderToy implements View.OnTouchListener {
             mafPosition = GLES20.glGetAttribLocation(program, "af_Position");
             //从运行的时候的时间
             miTimeHandle = GLES20.glGetUniformLocation(program, "iTime");
+            //当前多少帧
+            miFrameHandle = GLES20.glGetUniformLocation(program, "iFrame");
             //宽高
             miResolutionHandle = GLES20.glGetUniformLocation(program, "iResolution");
             //宽高
@@ -118,13 +122,19 @@ public class ShaderToy implements View.OnTouchListener {
 
         GLES20.glUniform4fv(miMouseHandle, 1, mMouse, 0);
         GLES20.glUniform3fv(miResolutionHandle, 1, mResolution, 0);
-        long nowInSec = SystemClock.elapsedRealtime();
-        GLES20.glUniform1f(miTimeHandle, ((float) (nowInSec - mStartTime)) / 1000f);
+        GLES20.glUniform1f(miTimeHandle, ((float) (SystemClock.elapsedRealtime() - mStartTime)) / 1000f);
+        GLES20.glUniform1i(miFrameHandle, ++iFrame);
 
-//        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, miChannel0);
-//        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-//        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        int[] iChannels = getChannels();
+        for (int i = 0; i < iChannels.length; i++) {
+            int sTextureLocation = GLES20.glGetUniformLocation(program, "iChannel" + i);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + i);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, iChannels[i]);
+            // TODO: zzw 2019-06-27 设置纹理数据
+            GLES20.glUniform1i(sTextureLocation, i);
+        }
+
+        extraDraw();
 
         //绘制 GLES20.GL_TRIANGLE_STRIP:复用坐标
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertexCount);
@@ -146,5 +156,14 @@ public class ShaderToy implements View.OnTouchListener {
             mMouse[1] = event.getY();
         }
         return true;
+    }
+
+
+    protected void extraDraw() {
+
+    }
+
+    protected int[] getChannels() {
+        return new int[]{};
     }
 }
