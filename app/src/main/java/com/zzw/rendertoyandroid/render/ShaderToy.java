@@ -2,7 +2,6 @@ package com.zzw.rendertoyandroid.render;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,6 +32,8 @@ public class ShaderToy implements View.OnTouchListener {
             0f, 0f, 0.0f, // top left
             1f, 0f, 0.0f,  // top right
     };
+
+
     //每一次取点的时候取几个点
     private static final int COORDS_PER_VERTEX = 3;
 
@@ -85,7 +86,7 @@ public class ShaderToy implements View.OnTouchListener {
 
     public void onSurfaceCreated() {
         String vertexSource = ShaderUtil.readRawTxt(context, R.raw.vertex_shader);
-        String fragmentSource = ShaderUtil.readRawTxt(context, R.raw.fragment_shader);
+        String fragmentSource = ShaderUtil.readRawTxt(context, R.raw._fragment_shader_xdlsds);
         program = ShaderUtil.createProgram(vertexSource, fragmentSource);
         if (program > 0) {
             //获取顶点坐标字段
@@ -101,7 +102,7 @@ public class ShaderToy implements View.OnTouchListener {
             //宽高
             miMouseHandle = GLES20.glGetUniformLocation(program, "iMouse");
         }
-        mStartTime = SystemClock.elapsedRealtime();
+        mStartTime = System.currentTimeMillis();
 
     }
 
@@ -122,8 +123,13 @@ public class ShaderToy implements View.OnTouchListener {
 
         GLES20.glUniform4fv(miMouseHandle, 1, mMouse, 0);
         GLES20.glUniform3fv(miResolutionHandle, 1, mResolution, 0);
-        GLES20.glUniform1f(miTimeHandle, ((float) (SystemClock.elapsedRealtime() - mStartTime)) / 1000f);
+        float t = ((float) (System.currentTimeMillis() - mStartTime)) / 1000f;
+
+        GLES20.glUniform1f(miTimeHandle, t);
         GLES20.glUniform1i(miFrameHandle, ++iFrame);
+
+        Log.e("zzz", "t=" + t);
+        Log.e("zzz", "iFrame=" + iFrame);
 
         int[] iChannels = getChannels();
         for (int i = 0; i < iChannels.length; i++) {
